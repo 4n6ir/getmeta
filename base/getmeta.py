@@ -1,0 +1,76 @@
+import asyncio
+import grp
+import os
+import platform
+import pwd
+import time
+from aiofile import async_open
+
+BLOCKSIZE = 65536
+
+run = str(int(time.time()))
+host = platform.node()
+
+async def main():
+    async with async_open(host+'-'+run+'.txt', 'w+') as f:
+        await f.write('path|host|source|size|sha256|mask|uid|gid|mtime|magic\n')
+        for dirpath, dirs, files in os.walk('/'):
+            dname = os.path.join(dirpath)
+            try:
+                mask = oct(os.stat(dname).st_mode)
+            except:
+                mask = 'ERROR'
+                pass
+            try:
+                uid = pwd.getpwuid(os.stat(dname).st_uid)[0]
+            except:
+                uid = 'ERROR'
+                pass
+            try:
+                gid = grp.getgrgid(os.stat(dname).st_gid)[0]
+            except:
+                gid = 'ERROR'
+                pass
+            try:
+                mtime = str(os.stat(dname).st_mtime)
+            except:
+                mtime = 'ERROR'
+                pass
+            await f.write(dname+'|'+host+'-'+run+'|DIR|-|-|'+mask+'|'+uid+'|'+gid+'|'+mtime+'|-\n')
+            for filename in files:
+                fname = os.path.join(dirpath,filename)
+                try:
+                    mtime = str(os.stat(fname).st_mtime)
+                except:
+                    mtime = 'ERROR'
+                    pass
+                try:
+                    size = os.path.getsize(fname)			
+                except: 
+                    size = 0
+                    pass
+                if size == 0:
+                    sha256_file = 'EMPTY'
+                elif size > 104857599:
+                    sha256_file = 'LARGE'
+                else:
+                    sha256_file = '-'
+                try:
+                    mask = oct(os.stat(fname).st_mode)
+                except:
+                    mask = 'ERROR'
+                    pass
+                try:
+                    uid = pwd.getpwuid(os.stat(fname).st_uid)[0]
+                except:
+                    uid = 'ERROR'
+                    pass
+                try:
+                    gid = grp.getgrgid(os.stat(fname).st_gid)[0]
+                except:
+                    gid = 'ERROR'
+                    pass
+                await f.write(fname+'|'+host+'-'+run+'|FILE|'+str(size)+'|'+sha256_file.upper()+'|'+mask+'|'+uid+'|'+gid+'|'+mtime+'|-\n')
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
