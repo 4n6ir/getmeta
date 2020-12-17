@@ -13,7 +13,7 @@ host = platform.node()
 
 async def main():
     async with async_open(host+'-'+run+'.txt', 'w+') as f:
-        await f.write('path|host|source|size|sha256|mask|uid|gid|mtime|magic\n')
+        await f.write('path|host|source|size|sha256|mask|uid|gid|mtime|magic|entropy\n')
         for dirpath, dirs, files in os.walk('/'):
             dname = os.path.join(dirpath)
             try:
@@ -36,7 +36,7 @@ async def main():
             except:
                 mtime = 'ERROR'
                 pass
-            await f.write(dname+'|'+host+'-'+run+'|DIR|-|-|'+mask+'|'+uid+'|'+gid+'|'+mtime+'|-\n')
+            await f.write(dname+'|'+host+'-'+run+'|DIR|-|-|'+mask+'|'+uid+'|'+gid+'|'+mtime+'|-|-\n')
             for filename in files:
                 fname = os.path.join(dirpath,filename)
                 try:
@@ -70,7 +70,7 @@ async def main():
                 except:
                     gid = 'ERROR'
                     pass
-                await f.write(fname+'|'+host+'-'+run+'|FILE|'+str(size)+'|'+sha256_file.upper()+'|'+mask+'|'+uid+'|'+gid+'|'+mtime+'|-\n')
+                await f.write(fname+'|'+host+'-'+run+'|FILE|'+str(size)+'|'+sha256_file.upper()+'|'+mask+'|'+uid+'|'+gid+'|'+mtime+'|-|-\n')
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())

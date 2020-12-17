@@ -2,8 +2,8 @@
 
 ### Data
 ```
-path|host|source|size|sha256|mask|uid|gid|mtime|magic
-/home/ec2-user/environment/getmeta/base/getmeta.py|ip-10-255-255-179.us-east-2.compute.internal-1607781476|FILE|2429|A5D4441B05D7D1553FAA917AA4C5AA380BC05957B94DB3984A2F2FFEAF4172CB|0o100644|ec2-user|ec2-user|1607776161.4326982|text/x-python
+path|host|source|size|sha256|mask|uid|gid|mtime|magic|entropy
+/home/ec2-user/environment/getmeta/base-sha256-magic-entropy/getmeta-sha256-magic-entropy.py|ip-10-255-255-179.us-east-2.compute.internal-1608171805|FILE|3815|DF9296157A7D1DA454F1D57610E770341FF798187DFDED77636EA3D643EA4CB0|0o100664|ec2-user|ec2-user|1608171714.11795|text/x-script.python|4.195862244962434
 ```
 
 **1. path**
@@ -45,6 +45,11 @@ path|host|source|size|sha256|mask|uid|gid|mtime|magic
     
 **10. magic**
   - mime type
+    - non-empty files
+    - less than 100 MB
+
+**11. entropy**
+  - randomness
     - non-empty files
     - less than 100 MB
 
@@ -134,6 +139,11 @@ $ wc ip-10-255-255-238.us-east-2.compute.internal-1607906032.txt
 
 $ ls -lh ip-10-255-255-238.us-east-2.compute.internal-1607906032.txt 
 -rw-r--r-- 1 root root 19M Dec 14 00:36 ip-10-255-255-238.us-east-2.compute.internal-1607906032.txt
+```
+
+##### Entropy
+```
+-- pending --
 ```
 
 ### Setup

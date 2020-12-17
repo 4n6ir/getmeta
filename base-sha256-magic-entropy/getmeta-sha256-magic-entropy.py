@@ -1,7 +1,9 @@
 import asyncio
+import collections
 import grp
 import hashlib
 import magic
+import math
 import os
 import platform
 import pwd
@@ -13,6 +15,22 @@ BLOCKSIZE = 65536
 run = str(int(time.time()))
 host = platform.node()
 
+async def entropy(fname):
+    try:
+        entropy_file = 0
+        with open(fname,'rb') as afile:
+            data = afile.read()
+        afile.close()
+        counter = collections.Counter(data)
+        file_length = len(data)
+        for count in counter.values():
+            p_x = count / file_length
+            entropy_file += - p_x * math.log2(p_x)
+    except:
+        entropy_file = 'ERROR'
+        pass
+    return entropy_file
+
 async def mime(fname):
     try:
         magic_file = magic.from_file(fname, mime=True)
@@ -23,13 +41,13 @@ async def mime(fname):
 
 async def sha256(fname):
     try:
-        sha256_file = ''
         sha256_hasher = hashlib.sha256()
         with open(fname,'rb') as afile:
             buf = afile.read(BLOCKSIZE)
             while len(buf) > 0:
                 sha256_hasher.update(buf)
                 buf = afile.read(BLOCKSIZE)
+        afile.close()
         sha256_file = sha256_hasher.hexdigest().upper()
     except:
         sha256_file = 'ERROR'
@@ -75,12 +93,15 @@ async def main():
                     size = 0
                     pass
                 if size == 0:
+                    entropy_file = 'EMPTY'
                     magic_file = 'EMPTY'
                     sha256_file = 'EMPTY'
                 elif size > 104857599:
+                    entropy_file = 'LARGE'
                     magic_file = 'LARGE'
                     sha256_file = 'LARGE'
                 else:
+                    entropy_file = await entropy(fname)
                     magic_file = await mime(fname)
                     sha256_file = await sha256(fname)
                 try:
@@ -98,7 +119,7 @@ async def main():
                 except:
                     gid = 'ERROR'
                     pass
-                await f.write(fname+'|'+host+'-'+run+'|FILE|'+str(size)+'|'+sha256_file.upper()+'|'+mask+'|'+uid+'|'+gid+'|'+mtime+'|'+magic_file+'|-\n')
+                await f.write(fname+'|'+host+'-'+run+'|FILE|'+str(size)+'|'+sha256_file.upper()+'|'+mask+'|'+uid+'|'+gid+'|'+mtime+'|'+magic_file+'|'+str(entropy_file)+'\n')
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
